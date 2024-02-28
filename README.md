@@ -4,10 +4,11 @@
 **This Extension is provided as-is and without warranty or support. It is not part of the PTC product suite. This project is licensed under the terms of the MIT license.**
 Considering the statement above, in case you have any questions regarding this extension:
 - do **not** open PTC Technical Support tickets for this extension (since it is not part of the PTC product suite)
+## Description
 
 This extension allows using InfluxDB Cloud TSM's data aggregation capabilities through Flux.<br>
 It does that by effectively using the aggregateWindow() Flux function that is called through the ThingWorx PostText ContentLoader snippet.<br>
-This extension should be used only if the user requires aggregated data for their use case. If raw data is needed, please use the ThingWorx's built-in QueryPropertyHistory style services.
+This extension should be used only if _the user requires aggregated data for their use case_. If raw data is needed, please use the ThingWorx's built-in QueryPropertyHistory style services.
 The main service in this Extension has a signature similar to QueryNamedPropertyHistory in order to be easy to use by the user. <br>
 It contains 3 ThingWorx entities, a ThingShape and 2 Datashapes (there is no Java code).
 
