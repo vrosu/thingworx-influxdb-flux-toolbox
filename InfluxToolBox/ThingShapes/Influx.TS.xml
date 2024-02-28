@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entities
+ majorVersion="9"
+ minorVersion="5"
+ universal="password">
+    <ThingShapes>
+        <ThingShape
+         className=""
+         description="This ThingShape offers the capability to read aggregated data from Influx directly without needing to postprocess data through ThingWorx.&#xA;It does this by using Flux's aggregateWindow function.&#xA;If users need raw data, they must use ThingWorx's builtin QueryPropertyHistory functions.&#xA;Note: tested only on InfluxDB Cloud TSM."
+         documentationContent=""
+         homeMashup=""
+         name="Influx.TS"
+         projectName="InfluxToolBox"
+         tags="">
+            <PropertyDefinitions>
+                <PropertyDefinition
+                 aspect.cacheTime="0.0"
+                 aspect.dataChangeType="VALUE"
+                 aspect.isPersistent="true"
+                 baseType="STRING"
+                 category=""
+                 description="Created by the PTC InfluxDB scripts"
+                 isLocalOnly="false"
+                 name="InfluxBucket"
+                 ordinal="4"></PropertyDefinition>
+                <PropertyDefinition
+                 aspect.cacheTime="0.0"
+                 aspect.dataChangeType="VALUE"
+                 aspect.isPersistent="true"
+                 baseType="STRING"
+                 category=""
+                 description=""
+                 isLocalOnly="false"
+                 name="InfluxURL"
+                 ordinal="3"></PropertyDefinition>
+            </PropertyDefinitions>
+            <ServiceDefinitions>
+                <ServiceDefinition
+                 aspect.isAsync="false"
+                 category=""
+                 description="raw InfluxDB query function"
+                 isAllowOverride="false"
+                 isLocalOnly="false"
+                 isOpen="false"
+                 isPrivate="false"
+                 name="QueryInfluxQL">
+                    <ResultType
+                     baseType="STRING"
+                     description=""
+                     name="result"
+                     ordinal="0"></ResultType>
+                    <ParameterDefinitions>
+                        <FieldDefinition
+                         baseType="STRING"
+                         description="Example:&#xA;SELECT mean(PropNumber1) FROM TestJavaLang GROUP BY time(1h) fill(none)"
+                         name="QueryBody"
+                         ordinal="1"></FieldDefinition>
+                    </ParameterDefinitions>
+                </ServiceDefinition>
+                <ServiceDefinition
+                 aspect.isAsync="false"
+                 category=""
+                 description=""
+                 isAllowOverride="false"
+                 isLocalOnly="false"
+                 isOpen="false"
+                 isPrivate="false"
+                 name="QueryNamedPropertyHistoryInflux">
+                    <ResultType
+                     aspect.dataShape="InfluxDataResultDataShape"
+                     baseType="INFOTABLE"
+                     description=""
+                     name="result"
+                     ordinal="0"></ResultType>
+                    <ParameterDefinitions>
+                        <FieldDefinition
+                         aspect.defaultValue="false"
+                         baseType="BOOLEAN"
+                         description="Creates empty rows depending on the groupBy time resolution.&#xA;WARNING: specifying a large start and end date together with a high groupByTimeResolution can result in a very large response payload that can impact user experience"
+                         name="createEmptyValues"
+                         ordinal="7"></FieldDefinition>
+                        <FieldDefinition
+                         baseType="DATETIME"
+                         description=""
+                         name="endDate"
+                         ordinal="3"></FieldDefinition>
+                        <FieldDefinition
+                         aspect.defaultValue="mean"
+                         baseType="STRING"
+                         description="Examples: mean, max, count, median, spread&#xA;aggregateWindow service aggregate or selector function to apply to each time window. Can be most of the functions available here: https://docs.influxdata.com/flux/v0/function-types/#aggregates"
+                         name="fieldFunction"
+                         ordinal="6"></FieldDefinition>
+                        <FieldDefinition
+                         aspect.defaultValue="false"
+                         baseType="BOOLEAN"
+                         description=""
+                         name="fillMissingData"
+                         ordinal="8"></FieldDefinition>
+                        <FieldDefinition
+                         aspect.defaultValue="false"
+                         baseType="BOOLEAN"
+                         description="If fillMissingData is true, activating this parameter means that InfluxDB will fill in missing data by using the last previous value in the dataset.&#xA;Setting this to false means that the value that will be used to fill in the missing data will be 0.&#xA;https://docs.influxdata.com/flux/v0/stdlib/universe/fill/"
+                         name="fillMissingDataUsePrevious"
+                         ordinal="4"></FieldDefinition>
+                        <FieldDefinition
+                         aspect.defaultValue="1h"
+                         baseType="STRING"
+                         description="Examples:1ms,1s,1m,1h,1d,1w,1mo,1y&#xA;Duration of the group by time. Units of measure are available here: https://docs.influxdata.com/flux/v0/data-types/basic/duration/"
+                         name="groupByTimeResolution"
+                         ordinal="5"></FieldDefinition>
+                        <FieldDefinition
+                         aspect.dataShape="InfluxFieldDataShape"
+                         baseType="INFOTABLE"
+                         description=""
+                         name="propertyNames"
+                         ordinal="1"></FieldDefinition>
+                        <FieldDefinition
+                         baseType="DATETIME"
+                         description=""
+                         name="startDate"
+                         ordinal="2"></FieldDefinition>
+                    </ParameterDefinitions>
+                </ServiceDefinition>
+                <ServiceDefinition
+                 aspect.isAsync="false"
+                 category=""
+                 description=""
+                 isAllowOverride="false"
+                 isLocalOnly="false"
+                 isOpen="false"
+                 isPrivate="false"
+                 name="SetInfluxURLFromPersistenceProvider">
+                    <ResultType
+                     aspect.dataShape="InfluxDataResultDataShape"
+                     baseType="NOTHING"
+                     description=""
+                     name="result"
+                     ordinal="0"></ResultType>
+                    <ParameterDefinitions></ParameterDefinitions>
+                </ServiceDefinition>
+            </ServiceDefinitions>
+            <EventDefinitions></EventDefinitions>
+            <ServiceMappings></ServiceMappings>
+            <ServiceImplementations>
+                <ServiceImplementation
+                 description=""
+                 handlerName="Script"
+                 name="QueryInfluxQL">
+                    <ConfigurationTables>
+                        <ConfigurationTable
+                         dataShapeName=""
+                         description=""
+                         isMultiRow="false"
+                         name="Script"
+                         ordinal="0">
+                            <DataShape>
+                                <FieldDefinitions>
+                                    <FieldDefinition
+                                     baseType="STRING"
+                                     description="code"
+                                     name="code"
+                                     ordinal="0"></FieldDefinition>
+                                </FieldDefinitions>
+                            </DataShape>
+                            <Rows>
+                                <Row>
+                                    <code>
+                                    <![CDATA[
+                                    if (me.InfluxURL == "")
+                                    	me.SetInfluxURLFromPersistenceProvider();
+                                    
+                                    var table = PersistenceProviders[Things[me.GetValueStream()].GetPersistenceProvider()].GetConfigurationTable({
+                                    	tableName: 'ConnectionInformation' /* STRING */
+                                    });
+                                    let influxPassword = table.token;
+                                    let influxOrgName = table.orgName;
+                                    QueryBody = "from(bucket: \"" + me.InfluxBucket + "\")" + "" + QueryBody;
+                                    let headers = {
+                                    	Authorization: "Token " + influxPassword,
+                                    	'Content-type' : "application/vnd.flux",
+                                    	'Accept': "application/csv"
+                                    };
+                                    me.InfluxURL = table.url + "/api/v2/query?orgID=" + influxOrgName;
+                                    
+                                    //final URL
+                                    let myUrlClean = me.InfluxURL;
+                                    //logger.warn("Headers: "+JSON.stringify(headers)+" | Body: "+QueryBody);
+                                    myUrl = encodeURI(myUrlClean);
+                                    
+                                    let params = {
+                                    	proxyScheme: undefined /* STRING {"defaultValue":"http"} */ ,
+                                    	headers: headers /* JSON */ ,
+                                    	ignoreSSLErrors: undefined /* BOOLEAN */ ,
+                                    	useNTLM: undefined /* BOOLEAN {"defaultValue":false} */ ,
+                                    	workstation: undefined /* STRING {"defaultValue":""} */ ,
+                                    	useProxy: undefined /* BOOLEAN {"defaultValue":false} */ ,
+                                    	withCookies: undefined /* BOOLEAN {"defaultValue":false} */ ,
+                                    	proxyHost: undefined /* STRING {"defaultValue":""} */ ,
+                                    	url: myUrl /* STRING */ ,
+                                    	content: QueryBody /* JSON */ ,
+                                    	timeout: undefined /* NUMBER {"defaultValue":60} */ ,
+                                    	proxyPort: undefined /* INTEGER {"defaultValue":8080} */ ,
+                                    	password: undefined /* STRING */ ,
+                                    	domain: undefined /* STRING {"defaultValue":""} */ ,
+                                    	username: undefined /* STRING */
+                                    };
+                                    
+                                    // result: STRING
+                                    result = Resources["ContentLoaderFunctions"].PostText(params);
+                                    ]]>
+                                    </code>
+                                </Row>
+                            </Rows>
+                        </ConfigurationTable>
+                    </ConfigurationTables>
+                </ServiceImplementation>
+                <ServiceImplementation
+                 description=""
+                 handlerName="Script"
+                 name="QueryNamedPropertyHistoryInflux">
+                    <ConfigurationTables>
+                        <ConfigurationTable
+                         dataShapeName=""
+                         description=""
+                         isMultiRow="false"
+                         name="Script"
+                         ordinal="0">
+                            <DataShape>
+                                <FieldDefinitions>
+                                    <FieldDefinition
+                                     baseType="STRING"
+                                     description="code"
+                                     name="code"
+                                     ordinal="0"></FieldDefinition>
+                                </FieldDefinitions>
+                            </DataShape>
+                            <Rows>
+                                <Row>
+                                    <code>
+                                    <![CDATA[
+                                    if (me.InfluxURL == "")
+                                    	me.SetInfluxURLFromPersistenceProvider();
+                                    var sStartDate = new Date(startDate).toISOString().split('.')[0] + 'Z';
+                                    var sEndDate = new Date(endDate).toISOString().split('.')[0] + 'Z';
+                                    let range = "|> range(start: " + sStartDate + ", stop: " + sEndDate + ")";
+                                    //needed to keep a map between provided property names and the InfluxDB Cloud result, which can change order even for the same request;
+                                    let propertyMetadata = new Object();
+                                    
+                                    var inputPropertyCount = propertyNames.rows.length;
+                                    var myFields = "|> filter(fn: (r) => r._measurement == \"" + me.name + "\" and ";
+                                    //in case we need a single property
+                                    if (inputPropertyCount == 1) {
+                                    	let metadata = new Object();
+                                    	metadata.originalIndex = 0;
+                                    	propertyMetadata[propertyNames.rows[0].fieldKey] = metadata;
+                                    	myFields += "r._field == \"" + propertyNames.rows[0].fieldKey + "\"";
+                                    } else {
+                                    
+                                    	myFields += "(";
+                                    	for (var x = 0; x < inputPropertyCount; x++) {
+                                    		var row = propertyNames.rows[x];
+                                    		let metadata = new Object();
+                                    		metadata.originalIndex = x;
+                                    		propertyMetadata[propertyNames.rows[x].fieldKey] = metadata;
+                                    		myFields += "r._field == \"" + row.fieldKey + "\"";
+                                    		if (x < inputPropertyCount - 1) {
+                                    			myFields = myFields + " or ";
+                                    		}
+                                    	}
+                                    	myFields += ")";
+                                    }
+                                    myFields += ")";
+                                    let aggregateType = "|> aggregateWindow(every: " + groupByTimeResolution + ",fn: " + fieldFunction + ",createEmpty:" + createEmptyValues + ")";
+                                    
+                                    var myEnd = "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\") |> drop(columns: [\"_start\",\"_stop\",\"valuestreamname\",\"_measurement\"])";
+                                    if(fillMissingData){
+                                    for (let propCount=0;propCount<inputPropertyCount;propCount++)
+                                        {
+                                            if (fillMissingDataUsePrevious)
+                                            myEnd+="|>fill(column: \""+propertyNames[propCount].fieldKey+"\", usePrevious: true)";
+                                            else
+                                                myEnd+="|>fill(column: \""+propertyNames[propCount].fieldKey+"\",value:0.0)";
+                                        }  
+                                    }
+                                    
+                                    var myQueryBody = range + "" + myFields + "" + aggregateType + "" + myEnd;
+                                    
+                                    let jresult = me.QueryInfluxQL({
+                                    	QueryBody: myQueryBody /* STRING */
+                                    });
+                                    
+                                    
+                                    var resultjson = jresult.split("\r\n"); //['series'];
+                                    // result: INFOTABLE
+                                    var resultInfoTable = Resources["InfoTableFunctions"].CreateInfoTableFromDataShape({
+                                    	infoTableName: "InflxResult" /* STRING */ ,
+                                    	dataShapeName: "InfluxDataResultDataShape" /* DATASHAPENAME */
+                                    });
+                                    
+                                    var resultHeaderLength = resultjson[0].split(",").length;
+                                    //at index 4 start the value columns in our flux query
+                                    //this step sets the final index of a field in the flux response payload
+                                    //required because for subsequent executions of a same query the order of fields can change
+                                    for (let x = 4; x < resultHeaderLength; x++) {
+                                    	for (let key in propertyMetadata) {
+                                    		if (key == resultjson[0].split(",")[x]) {
+                                    			propertyMetadata[key].finalIndex = x;
+                                    		}
+                                    	}
+                                    }
+                                    
+                                    let int_ResultLength = resultjson.length;
+                                    for (var i = 1; i < int_ResultLength - 2; i++) {
+                                    	let newEntry = new Object();
+                                    	let newEntryFields = resultjson[i].split(",");
+                                    	newEntry.Time = parseDateISO(newEntryFields[3]);
+                                        for (let propCount=1;propCount<=inputPropertyCount;propCount++)
+                                        {
+                                            let cValue = newEntryFields[propertyMetadata[propertyNames.rows[propCount-1].fieldKey].finalIndex];
+                                    		if (cValue != undefined && cValue != null && cValue != "")
+                                    			newEntry["InfluxValue"+propCount] = parseFloat(cValue);
+                                        }  
+                                    	resultInfoTable.AddRow(newEntry);
+                                    }
+                                    result = resultInfoTable;
+                                    ]]>
+                                    </code>
+                                </Row>
+                            </Rows>
+                        </ConfigurationTable>
+                    </ConfigurationTables>
+                </ServiceImplementation>
+                <ServiceImplementation
+                 description=""
+                 handlerName="Script"
+                 name="SetInfluxURLFromPersistenceProvider">
+                    <ConfigurationTables>
+                        <ConfigurationTable
+                         dataShapeName=""
+                         description=""
+                         isMultiRow="false"
+                         name="Script"
+                         ordinal="0">
+                            <DataShape>
+                                <FieldDefinitions>
+                                    <FieldDefinition
+                                     baseType="STRING"
+                                     description="code"
+                                     name="code"
+                                     ordinal="0"></FieldDefinition>
+                                </FieldDefinitions>
+                            </DataShape>
+                            <Rows>
+                                <Row>
+                                    <code>
+                                    <![CDATA[
+                                    var table =  PersistenceProviders[Things[me.GetValueStream()].GetPersistenceProvider()].GetConfigurationTable({
+                                    	tableName: 'ConnectionInformation' /* STRING */
+                                    });
+                                    
+                                    me.InfluxURL= table.url;
+                                    me.InfluxBucket = table.bucketName;
+                                    ]]>
+                                    </code>
+                                </Row>
+                            </Rows>
+                        </ConfigurationTable>
+                    </ConfigurationTables>
+                </ServiceImplementation>
+            </ServiceImplementations>
+            <Subscriptions></Subscriptions>
+            <avatar></avatar>
+            <DesignTimePermissions>
+                <Create></Create>
+                <Read></Read>
+                <Update></Update>
+                <Delete></Delete>
+                <Metadata></Metadata>
+            </DesignTimePermissions>
+            <RunTimePermissions></RunTimePermissions>
+            <VisibilityPermissions>
+                <Visibility></Visibility>
+            </VisibilityPermissions>
+            <ConfigurationTableDefinitions></ConfigurationTableDefinitions>
+            <ConfigurationTables></ConfigurationTables>
+            <PropertyBindings></PropertyBindings>
+            <RemotePropertyBindings></RemotePropertyBindings>
+            <RemoteServiceBindings></RemoteServiceBindings>
+            <RemoteEventBindings></RemoteEventBindings>
+            <AlertConfigurations>
+                <AlertDefinitions
+                 name="InfluxBucket"></AlertDefinitions>
+                <AlertDefinitions
+                 name="InfluxURL"></AlertDefinitions>
+            </AlertConfigurations>
+            <InstanceRunTimePermissions></InstanceRunTimePermissions>
+        </ThingShape>
+    </ThingShapes>
+</Entities>
